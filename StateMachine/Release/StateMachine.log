@@ -1,0 +1,10 @@
+﻿  AttackState.cpp
+  JumpState.cpp
+  main.cpp
+  State.cpp
+  StateManager.cpp
+  Generating code
+  All 25 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  StateMachine.vcxproj -> C:\Users\ID126018\Dropbox\BCU\Teaching\Artificial Intelligence for Games\labs\FSMs\StateMachine\Release\StateMachine.exe
+  StateMachine.vcxproj -> C:\Users\ID126018\Dropbox\BCU\Teaching\Artificial Intelligence for Games\labs\FSMs\StateMachine\Release\StateMachine.pdb (Full PDB)

@@ -2,7 +2,8 @@
 
 // Movement for Chibi
 
-public class move_starter : MonoBehaviour {
+public class move_starter : MonoBehaviour 
+{
     // chibi speed
     public float speed = 10.0f;
     // chibi rotation speed
@@ -10,7 +11,8 @@ public class move_starter : MonoBehaviour {
     // Public GameObject to store the seekable object in
     public GameObject seek_me;
 
-    Vector3 Cross(Vector3 v, Vector3 w) {
+    Vector3 Cross(Vector3 v, Vector3 w) 
+    {
 
         Vector3 crossProd = new Vector3(0, 0, 0);
 
@@ -32,7 +34,8 @@ public class move_starter : MonoBehaviour {
     }
 
     // Calculate the vector to the seek object
-    float CalculateAngle() {
+    float CalculateAngle()
+    {
 
         // Chibi foward facing vector
         Vector3 tF = this.transform.forward;
@@ -45,7 +48,13 @@ public class move_starter : MonoBehaviour {
         // TODO: Calculate the dot product of tF and sD
         dot = tF.x * sD.x + tF.y * sD.y + tF.z * sD.z;
         // TODO: Calculate the angle between the two items - be careful it is in degs and not rads
-        angle =
+        angle = 0f;
+        float magProduct = tF.magnitude * sD.magnitude;
+        if (magProduct > 0f)
+        {
+            float cos = Mathf.Clamp(dot / magProduct, -1f, 1f);
+            angle = Mathf.Acos(cos) * Mathf.Rad2Deg;
+        }
 
         // Output the angles to the console - these should be the same
         Debug.Log("Angle: " + angle);
@@ -61,7 +70,8 @@ public class move_starter : MonoBehaviour {
     }
 
     // Calculate the distance from the chibi to whatever it is finding
-    void CalculateDistance() {
+    void CalculateDistance()
+    {
 
         // Chibi position
         Vector3 tP = this.transform.position;
@@ -71,7 +81,7 @@ public class move_starter : MonoBehaviour {
         float distance = 0.0f;
 
         // TODO: Calculate the distance between the objects tP and sP using pythagoras
-        // distance = <do calculation here>
+        distance = Mathf.Sqrt((sP.x - tP.x) * (sP.x - tP.x) + (sP.y - tP.y) * (sP.y - tP.y) + (sP.z - tP.z) * (sP.z - tP.z));
 
         // Calculate and compare your calculation with the distance using Unitys vector distance function
         float unityDistance = Vector3.Distance(tP, sP);
@@ -81,7 +91,8 @@ public class move_starter : MonoBehaviour {
         Debug.Log("Unity Distance: " + unityDistance);
     }
 
-    void Update() {
+    void Update()
+    {
         // Get the horizontal and vertical axis.
         // By default they are mapped to the arrow keys.
         // The value is in the range -1 to 1
@@ -99,7 +110,8 @@ public class move_starter : MonoBehaviour {
         transform.Rotate(0, rotation, 0);
 
         // Check for the spacebar being pressed
-        if (Input.GetKeyDown(KeyCode.Space)) {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
             // Call Cross to calculate the cross product of the object's forward and right vectors
             // What is the result?  What vector does it correspond to?
             Cross(transform.forward, transform.right);
@@ -112,7 +124,8 @@ public class move_starter : MonoBehaviour {
         }
 
         // Check for the T key being pressed
-        if (Input.GetKeyDown(KeyCode.T)) {
+        if (Input.GetKeyDown(KeyCode.T)) 
+        {
             // Call CalculateAngle method
             float angle_to_turn = CalculateAngle();
             this.transform.Rotate(0, angle_to_turn,0);

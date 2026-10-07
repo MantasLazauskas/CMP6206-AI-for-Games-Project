@@ -1,0 +1,8 @@
+﻿  StateManager.cpp
+  State.cpp
+  main.cpp
+  JumpState.cpp
+  AttackState.cpp
+  Generating Code...
+  StateMachine.vcxproj -> C:\Users\ID126018\Dropbox\BCU\Teaching\Artificial Intelligence for Games\labs\FSMs\StateMachine\Debug\StateMachine.exe
+  StateMachine.vcxproj -> C:\Users\ID126018\Dropbox\BCU\Teaching\Artificial Intelligence for Games\labs\FSMs\StateMachine\Debug\StateMachine.pdb (Full PDB)
