@@ -1,11 +1,57 @@
-# CMP6206_Starter-repo
+# CMP6206\_Starter-repo
 
 ## TODO: Add the following details and update regularly
 
-1. Name of your project
-2. Description/overview - What AI features will the project have/showcase and in what way will they be realised.  For example, for FSM what type of agents will be created using FSM such as enemies, companion, allies, etc.  
-3. Target game engine - Note: you should add an appropriate .gitignore file for the game engine you are using so you don't end up uploading extraneous files that increase the size of the repo.  There are .gitignore files for Unity and Unreal, and other game engines, available from https://github.com/github/gitignore.  For C++ using Visual Studio use the Visual Studio .gitignore but note that it needs some modification as .lib files necessary for building a C++ project are ignored by default.
-4. Research - background to the project such as inspiration and what you need to find out to achieve the AI features.  If real behaviour is to be implemented then examples such as flocking or using Artificial Life (ALife) approaches such as cellular automata should be used to support your project and provide a means of comparison of how successful your implementation is.
-5. Methodology/planning - what approach are you going to take to develop the project implementation successfully.  For example, use of Trello or KANBAN.  Ideally, you have an overall plan for project development showing the major milestones to be achieved, e.g. setup up scene, implement AI methods, testing (for Quality Assurance), etc.
-6. Progress documentation - regular commits/updates to the project need to be documented with a brief overview and reflection on what has been achieved.  For example, what feature(s) have been added?  Were they achieved in the time allowed?  What problems were there or remain?  What has been learnt and what would you do differently if you had to repeat the project?
-7. References to sources used.  This must include graphics resources used such as models and textures, and code resources (websites, book, AI).
+1. **Name of your project -** Battlefield AI: Soldier Simulation
+
+2. **Description/overview -** A real-time tactical combat simulation where AI soldiers navigate a structured environment, acquire threats via sensory logic, and execute complex tactical decisions. **Core AI Features:**
+
+   1. **Finite State Machines \& Behaviour Trees:** Utilizes FSMs/Behaviour Trees to control unit behaviours, handle fail-safe recovery nodes, and manage tactical transitions (e.g., Patrol -> Engage -> Take Cover). 
+   2. **Agent Sensors:** Implemented via raycasts and physics queries to simulate line-of-sight and auditory threat detection. 
+   3. **Pathfinding (A\* \& NavMesh):** Integrates Unity's navigation tools and heuristic search logic to navigate around battlefield obstacles efficiently.
+
+3. **Target game engine -** Unity.
+
+4. Research **-** Inspiration: Squad-based tactical shooters and strategic military simulation units. 
+
+**Technical Focus:** Transitioning from rigid FSM architectures to modular, scalable decision-making frameworks (such as Behaviour Trees) to prevent "transition spaghetti" as tactical logic expands. Balancing raycast sensor frequency with performance constraints to handle multiple active agents simultaneously.
+
+5. **Methodology/planning -** Tracked using a Kanban board (GitHub Projects) organized into Backlog, In Progress, Testing, and Done. **Adaptable Roadmap (Weeks 1 – 12+):**
+
+   1. **Weeks 1–2:** Scene setup, environment prototyping, and base FSM framework creation.
+
+   2. **Weeks 3–4:** Line-of-sight sensors, hearing mechanics, and pathfinding integration.
+   3. **Week 5**: Combat loop execution, cover evaluation, and state debugging.
+
+   4. **Week 6 (Current):** Integrating Behaviour Trees to improve decision modularity and action recovery.
+
+   5. **Weeks 7–12+ (Upcoming / Flexible):** As new AI topics are covered in sessions—such as Goal-Oriented Action Planning (GOAP), Steering Behaviours \& Boids, Adversarial Search, Reinforcement Learning, Neural Networks, and Genetic Algorithms—I will evaluate each concept and adapt the plan, selectively implementing only the features that I deem necessary and beneficial for this specific simulation.   
+   6. **Final Phase:** Quality assurance, system balancing, dynamic UI state debugging, and final documentation polish.
+6. **Progress documentation -** 
+
+   1. **Week 1 (Date: 23/09/2026) – Setup \& Architecture:**
+
+      1. **Achieved:** Initialized the Unity project repository, added the official .gitignore, and set up the foundational scene environment.
+      2. **Challenges/Learnings:** Ensured version control tracking clean builds without extraneous local library files.
+   2. **Weeks 2–3 (Dates: 30/09/2026 - 07/10/2026) – Core FSM \& Sensors:**
+
+      1. **Achieved:** Implemented the base Finite State Machine framework and programmed raycast/overlap sphere sensors for line-of-sight threat acquisition.
+      2. **Challenges/Learnings:** Fine-tuned sensor raycast frequencies to prevent performance overhead during active agent updates.
+   3. **Weeks 4–5 (Dates: 14/10/2026 - 21/10/2026) – Pathfinding \& Combat Loop:**
+
+      1. **Achieved:** Integrated Unity's NavMesh with heuristic search logic ($A^\*$) and completed the core combat loop (Patrol -> Engage -> Cover).
+      2. **Challenges/Learnings:** Addressed state-oscillation bugs where units rapidly flickered between defensive cover states and offensive actions.
+   4. **Week 6 (Current - Date: 28/10/2026) – Behaviour Trees Integration:**
+
+      1. **Achieved:** Explored and began integrating Behaviour Trees to handle hierarchical action execution and fail-safe recovery nodes.   
+      2. **Challenges/Learnings:** Managed the design trade-off between the modular organization of behaviour trees and the immediate reflex response required in high-intensity combat.
+
+7. **References to sources used -** 
+
+   1. **Engine \& Documentation:** Unity Documentation.   
+   2. **Academic \& Textbooks:**
+
+      1. CMP6206 AI for Games Module Lectures (Birmingham City University).  
+   3. **Graphics \& Rigs:** Character models and animations sourced from Mixamo.
+   4. **Version Control:** Official GitHub Unity .gitignore.
+
