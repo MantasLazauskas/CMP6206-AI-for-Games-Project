@@ -1,14 +1,12 @@
-#ifndef JUMPSTATE_H
-#define JUMPSTATE_H
-
+#pragma once
 #include "State.h"
+#include <chrono>
 
-class JumpState : public State
-{
+class JumpState final : public State {
 public:
-	JumpState(StateManager* manager);
-	void update();
-
+    using State::State;
+    void enter() override;
+    void update() override;
+private:
+    std::chrono::steady_clock::time_point started{};
 };
-
-#endif

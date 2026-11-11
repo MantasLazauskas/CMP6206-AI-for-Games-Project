@@ -1,33 +1,37 @@
 #include "AttackState.h"
-#include "StateManager.h"
+#include "DodgeState.h"
 #include "JumpState.h"
-
-#include <Windows.h>
-
+#include "StateManager.h"
+#include <chrono>
 #include <iostream>
+#include <memory>
 
-using namespace std;
+AttackState::AttackState(StateManager& stateManager) : State(stateManager) {}
 
-AttackState::AttackState(StateManager* manager) : State(manager)
-{
-	ammo = 100;
+void AttackState::enter() {
+    lastShot = std::chrono::steady_clock::now();
+    std::cout << "[ATTACK] Entering attack state. Ammo: " << manager.ammoRemaining() << '\n';
 }
 
-void AttackState::update()
-{
-	if(ammo <= 0)
-	{
-		cout << "Out of ammo, changing state to jump..." << endl;
-		Sleep(1000);
-		manager->setState(new JumpState(manager));
-	}
-	else
-	{
-		cout << "Shoot" << endl;
-		Sleep(250);
-		ammo--;
-		if (ammo % 10 == 0) {
-			cout << "Ammo Count: " << ammo << endl;
-		}
-	}
+void AttackState::update() {
+    if (manager.isBulletThreatening()) {
+        std::cout << "[ATTACK] Incoming bullet detected!\n";
+        manager.changeState(std::make_unique<DodgeState>(manager));
+        return;
+    }
+
+    constexpr auto shotInterval = std::chrono::milliseconds(500);
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastShot < shotInterval) return;
+    lastShot = now;
+
+    if (manager.ammoRemaining() > 0) {
+        const int remaining = manager.consumeAmmo();
+        std::cout << "[ATTACK] Shoot! Ammo remaining: " << remaining << '\n';
+    }
+
+    if (manager.ammoRemaining() == 0) {
+        std::cout << "[ATTACK] Out of ammo. Moving to jump state.\n";
+        manager.changeState(std::make_unique<JumpState>(manager));
+    }
 }

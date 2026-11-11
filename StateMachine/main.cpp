@@ -1,27 +1,26 @@
-#include "State.h"
-#include "JumpState.h"
-
 #include "StateManager.h"
-#include "AttackState.h"
+#include "IdleState.h"
 
-#include <Windows.h>
-
+#include <chrono>
 #include <iostream>
+#include <memory>
+#include <thread>
 
-using namespace std;
+int main() {
+    StateManager manager;
+    manager.changeState(std::make_unique<IdleState>(manager));
 
-int main(int argc, char* argv[])
-{
-	StateManager manager;
+    std::cout << "FSM mini-game starting...\n";
+    int frame = 0;
+    while (!manager.isFinished()) {
+        // Demo input: simulate incoming bullets at selected moments.
+        // In a real game, a collision/perception system would set this flag.
+        manager.setBulletThreat(frame == 28 || frame == 55);
+        manager.update();
+        ++frame;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 
-	cout << "Setting initial state to Attack..." << endl;
-	Sleep(1000);
-	manager.setState(new AttackState(&manager));
-
-	while(true)
-	{
-		manager.update();
-	}
-
-	return 0;
+    std::cout << "FSM demo finished.\n";
+    return 0;
 }

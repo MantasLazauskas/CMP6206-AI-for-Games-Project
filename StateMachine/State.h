@@ -1,21 +1,18 @@
-#ifndef STATE_H
-#define STATE_H
+#pragma once
+
+#include <memory>
 
 class StateManager;
 
-class State
-{
+class State {
 public:
-	State(StateManager* manager);
-	virtual ~State();
+    explicit State(StateManager& manager) noexcept;
+    virtual ~State() = default; // Required for safe deletion through a base pointer.
 
-	virtual void update() = 0;
-
-	State** self;
+    virtual void enter() {}
+    virtual void update() = 0;
+    virtual void exit() {}
 
 protected:
-	StateManager* manager;
-
+    StateManager& manager;
 };
-
-#endif
