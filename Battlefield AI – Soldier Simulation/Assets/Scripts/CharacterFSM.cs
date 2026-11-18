@@ -2,233 +2,153 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
+[RequireComponent(typeof(AgentSensors))]
 public class CharacterFSM : MonoBehaviour
 {
-    [Header("FSM Tuning")]
-    [SerializeField] private int startingAmmo = 30;
-    [SerializeField] private float secondsPerShot = 0.2f;
-    [SerializeField] private float reloadSeconds = 2.5f;
-
-    [Header("Patrol Settings")]
-    [SerializeField] public Transform[] waypoints; // Public so states can access it
-
-    [Header("Threat Detection")]
-    [SerializeField] private float detectionRadius = 15f;
-    [SerializeField] private LayerMask enemyLayer;
-
-    // Public property so inner states can access the NavMeshAgent
-    public NavMeshAgent agent { get; private set; }
-
-    private ICharacterState currentState;
-    private ICharacterState pendingState;
-    private int ammo;
-
-    public int Ammo => ammo;
-
-    private void Awake()
+    public enum FSMState
     {
-        agent = GetComponent<NavMeshAgent>();
+        Patrol,
+        Chase,
+        Attack
     }
 
-    private void Start()
+    [Header("FSM Settings")]
+    public FSMState currentState;
+    public float attackRange = 2.5f; // Distance at which the soldier stops and attacks
+
+    [Header("Combat Settings")]
+    public GameObject bulletPrefab; // Assign your bullet prefab here
+    public Transform firePoint;     // Assign your FirePoint here
+    public float fireRate = 1.0f;   // Time in seconds between shots
+    private float nextFireTime = 0f;
+
+    [Header("Optional Patrol Waypoints")]
+    public Transform[] waypoints;
+    private int currentWaypointIndex = 0;
+
+    private NavMeshAgent navMeshAgent;
+    private AgentSensors sensors;
+
+    void Start()
     {
-        ammo = startingAmmo;
-        if (waypoints != null && waypoints.Length > 0)
-            ChangeState(new PatrolState(this, waypoints));
+        navMeshAgent = GetComponent<NavMeshAgent>();
+        sensors = GetComponent<AgentSensors>();
+        currentState = FSMState.Patrol;
+    }
+
+    void Update()
+    {
+        // 1. Determine Current State based on Sensors and Distance
+        if (sensors.DetectedTarget != null)
+        {
+            float distanceToTarget = Vector3.Distance(transform.position, sensors.DetectedTarget.position);
+
+            if (distanceToTarget <= attackRange)
+            {
+                currentState = FSMState.Attack;
+            }
+            else
+            {
+                currentState = FSMState.Chase;
+            }
+        }
         else
-            ChangeState(new IdleState(this));
-    }
-
-    private void Update()
-    {
-        ApplyPendingState();
-
-        if (currentState != null)
-            currentState.Tick(Time.deltaTime);
-
-        ApplyPendingState();
-    }
-
-    public void ChangeState(ICharacterState next)
-    {
-        pendingState = next;
-    }
-
-    private void ApplyPendingState()
-    {
-        if (pendingState == null) return;
-
-        currentState?.Exit();
-        currentState = pendingState;
-        pendingState = null;
-        currentState.Enter();
-    }
-
-    public bool IsThreatDetected()
-    {
-        Collider[] hits = Physics.OverlapSphere(transform.position, detectionRadius, enemyLayer);
-        return hits.Length > 0;
-    }
-
-    public void Fire()
-    {
-        if (ammo <= 0) return;
-        ammo--;
-        Debug.Log($"[ATTACK] Soldier fires weapon! Ammo remaining: {ammo}");
-    }
-
-    public void MoveTo(Vector3 destination)
-    {
-        agent.SetDestination(destination);
-    }
-
-    public void StopMoving()
-    {
-        if (agent.isOnNavMesh)
-            agent.ResetPath();
-    }
-
-    public void RefillAmmo()
-    {
-        ammo = startingAmmo;
-        Debug.Log("[RELOAD] Magazine refilled.");
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, detectionRadius);
-    }
-
-    // ==========================================
-    // FSM INTERFACE & STATES
-    // ==========================================
-
-    public interface ICharacterState
-    {
-        void Enter();
-        void Tick(float deltaTime);
-        void Exit();
-    }
-
-    private abstract class CharacterState : ICharacterState
-    {
-        protected readonly CharacterFSM fsm;
-        protected float elapsed;
-
-        protected CharacterState(CharacterFSM owner) { fsm = owner; }
-        public virtual void Enter() { elapsed = 0f; }
-        public abstract void Tick(float deltaTime);
-        public virtual void Exit() { }
-    }
-
-    private sealed class PatrolState : CharacterState
-    {
-        private readonly Transform[] waypoints;
-        private int currentWaypointIndex = 0;
-
-        public PatrolState(CharacterFSM owner, Transform[] waypoints) : base(owner)
         {
-            this.waypoints = waypoints;
+            currentState = FSMState.Patrol;
         }
 
-        public override void Enter()
+        // 2. Execute Behavior for the Active State
+        switch (currentState)
         {
-            base.Enter();
-            Debug.Log("[PATROL] Moving to next waypoint.");
-            if (waypoints != null && waypoints.Length > 0)
+            case FSMState.Patrol:
+                HandlePatrolState();
+                break;
+
+            case FSMState.Chase:
+                HandleChaseState();
+                break;
+
+            case FSMState.Attack:
+                HandleAttackState();
+                break;
+        }
+    }
+
+    void HandlePatrolState()
+    {
+        navMeshAgent.isStopped = false;
+
+        // Ensure the array exists, has items, and the current waypoint slot isn't empty (null)
+        if (waypoints != null && waypoints.Length > 0)
+        {
+            if (waypoints[currentWaypointIndex] != null)
             {
-                fsm.MoveTo(waypoints[currentWaypointIndex].position);
-            }
-        }
+                navMeshAgent.SetDestination(waypoints[currentWaypointIndex].position);
 
-        public override void Tick(float dt)
-        {
-            if (fsm.IsThreatDetected())
-            {
-                fsm.ChangeState(new AttackState(fsm));
-                return;
-            }
-
-            if (waypoints != null && waypoints.Length > 0 && !fsm.agent.pathPending && fsm.agent.remainingDistance <= fsm.agent.stoppingDistance)
-            {
-                currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
-                fsm.MoveTo(waypoints[currentWaypointIndex].position);
-                Debug.Log($"[PATROL] Reached waypoint. Moving to index {currentWaypointIndex}");
-            }
-        }
-    }
-
-    private sealed class IdleState : CharacterState
-    {
-        public IdleState(CharacterFSM owner) : base(owner) { }
-        public override void Enter()
-        {
-            base.Enter();
-            fsm.StopMoving();
-            Debug.Log("[IDLE] Soldier standing ground...");
-        }
-        public override void Tick(float dt)
-        {
-            if (fsm.IsThreatDetected())
-            {
-                fsm.ChangeState(new AttackState(fsm));
-            }
-        }
-    }
-
-    private sealed class AttackState : CharacterState
-    {
-        private float shotTimer;
-        public AttackState(CharacterFSM owner) : base(owner) { }
-
-        public override void Enter()
-        {
-            base.Enter();
-            shotTimer = 0f;
-            fsm.StopMoving();
-            Debug.Log($"[ATTACK] Engaging target. Current ammo: {fsm.ammo}");
-        }
-
-        public override void Tick(float dt)
-        {
-            shotTimer += dt;
-            if (shotTimer >= fsm.secondsPerShot)
-            {
-                shotTimer = 0f;
-                fsm.Fire();
-
-                if (fsm.ammo <= 0)
+                if (!navMeshAgent.pathPending && navMeshAgent.remainingDistance < 0.5f)
                 {
-                    fsm.ChangeState(new ReloadState(fsm));
+                    currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
                 }
             }
+            else
+            {
+                Debug.LogWarning("Waypoint at index " + currentWaypointIndex + " is unassigned!", this);
+            }
+        }
+        else
+        {
+            // If no waypoints are set up yet, just stand idle
+            navMeshAgent.isStopped = true;
         }
     }
 
-    private sealed class ReloadState : CharacterState
+    void HandleChaseState()
     {
-        public ReloadState(CharacterFSM owner) : base(owner) { }
+        navMeshAgent.isStopped = false;
 
-        public override void Enter()
+        if (sensors.DetectedTarget != null)
         {
-            base.Enter();
-            fsm.StopMoving();
-            Debug.Log("[RELOAD] Reloading weapon...");
+            navMeshAgent.SetDestination(sensors.DetectedTarget.position);
         }
+    }
 
-        public override void Tick(float dt)
+    void HandleAttackState()
+    {
+        navMeshAgent.isStopped = true; // Stop moving so the soldier holds position
+
+        if (sensors.DetectedTarget != null)
         {
-            elapsed += dt;
-            if (elapsed >= fsm.reloadSeconds)
-            {
-                fsm.RefillAmmo();
+            // Keep soldier upright while turning to face the target
+            Vector3 lookTarget = new Vector3(
+                sensors.DetectedTarget.position.x,
+                transform.position.y,
+                sensors.DetectedTarget.position.z
+            );
+            transform.LookAt(lookTarget);
 
-                // Fixed: Accessing waypoints through fsm.waypoints
-                if (fsm.waypoints != null && fsm.waypoints.Length > 0)
-                    fsm.ChangeState(new PatrolState(fsm, fsm.waypoints));
-                else
-                    fsm.ChangeState(new IdleState(fsm));
+            // Aim the firePoint directly at the target's center mass
+            if (firePoint != null)
+            {
+                firePoint.LookAt(sensors.DetectedTarget.position + Vector3.up * 1.0f);
+            }
+
+            ShootAtTarget();
+        }
+    }
+
+    void ShootAtTarget()
+    {
+        if (Time.time >= nextFireTime)
+        {
+            nextFireTime = Time.time + fireRate;
+
+            if (bulletPrefab != null && firePoint != null)
+            {
+                Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+            }
+            else
+            {
+                Debug.LogWarning("Bullet Prefab or FirePoint is unassigned on CharacterFSM!", this);
             }
         }
     }

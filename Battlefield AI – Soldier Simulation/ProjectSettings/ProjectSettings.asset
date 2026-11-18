@@ -66,6 +66,9 @@ PlayerSettings:
   useOSAutorotation: 1
   use32BitDisplayBuffer: 1
   preserveFramebufferAlpha: 0
+  adjustIOSFPSUsingThermalState: 1
+  thermalStateSeriousIOSFPS: 30
+  thermalStateCriticalIOSFPS: 15
   disableDepthAndStencilBuffers: 0
   androidStartInFullscreen: 1
   androidRenderOutsideSafeArea: 1
@@ -855,8 +858,8 @@ PlayerSettings:
   editorAssembliesCompatibilityLevel: 1
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: "Battlefield AI \u2013 Soldier Simulation"
-  metroPackageVersion: 
+  metroPackageName: BattlefieldAISoldierSimulation
+  metroPackageVersion: 1.0.0.0
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
@@ -864,7 +867,7 @@ PlayerSettings:
   metroCertificateNotAfter: 0000000000000000
   metroApplicationDescription: "Battlefield AI \u2013 Soldier Simulation"
   wsaImages: {}
-  metroTileShortName: 
+  metroTileShortName: "Battlefield AI \u2013 Soldier Simulation"
   metroTileShowName: 0
   metroMediumTileShowName: 0
   metroLargeTileShowName: 0
